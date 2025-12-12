@@ -23,7 +23,6 @@
 
         .clocks-container {
             display: flex;
-            gap: 40px;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -32,7 +31,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 15px;
         }
 
         .clock {
@@ -148,6 +146,10 @@
         // ============================================
         // CONFIGURATION: Edit these variables to customize timezones
         // ============================================
+        
+        // Clock size scale (1.0 = 100%, 0.7 = 70%, 1.5 = 150%, etc.)
+        const CLOCK_SCALE = 0.7;
+        
         const TIMEZONES = [
             {
                 timezone: 'Asia/Seoul',
@@ -178,6 +180,11 @@
         function createClockElement(config) {
             const wrapper = document.createElement('div');
             wrapper.className = 'clock-wrapper';
+            
+            // Apply scale and adjust spacing
+            wrapper.style.transform = `scale(${CLOCK_SCALE})`;
+            wrapper.style.margin = `${10 * CLOCK_SCALE}px`;
+            wrapper.style.gap = `${15 * CLOCK_SCALE}px`;
             
             wrapper.innerHTML = `
                 <div class="clock">
