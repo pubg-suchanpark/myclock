@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World Time Widget</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+    }
+    
+    .container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      align-content: center;
+      gap: 12px;
+      padding: 10px;
+    }
+    
+    .clock-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 16px;
+      min-width: 90px;
+      flex: 0 1 auto;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+    
+    .city-name {
+      font-size: 11px;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    
+    .time-row {
+      display: flex;
+      align-items: baseline;
+    }
+    
+    .time {
+      font-size: 22px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: #222;
+    }
+    
+    .ampm {
+      font-size: 11px;
+      color: #0984e3;
+      margin-left: 3px;
+      font-weight: 600;
+    }
+    
+    .date {
+      font-size: 10px;
+      color: #999;
+      margin-top: 3px;
+    }
+    
+    .flag {
+      font-size: 16px;
+      margin-bottom: 3px;
+    }
+    
+    /* For compact view */
+    @media (max-width: 400px), (max-height: 180px) {
+      .container {
+        gap: 8px;
+        padding: 8px;
+      }
+      .clock-card {
+        padding: 8px 12px;
+        min-width: 80px;
+      }
+      .time {
+        font-size: 18px;
+      }
+      .city-name {
+        font-size: 10px;
+      }
+      .flag {
+        font-size: 14px;
+      }
+    }
+    
+    /* Ultra compact */
+    @media (max-height: 100px) {
+      .container {
+        gap: 6px;
+        padding: 6px;
+      }
+      .clock-card {
+        padding: 6px 10px;
+        min-width: 70px;
+      }
+      .time {
+        font-size: 16px;
+      }
+      .date, .flag {
+        display: none;
+      }
+      .city-name {
+        font-size: 9px;
+        margin-bottom: 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="clockContainer"></div>
+  
+  <script>
+    const cities = [
+      { name: 'Seoul', flag: '🇰🇷', tz: 'Asia/Seoul' },
+      { name: 'New York', flag: '🇺🇸', tz: 'America/New_York' },
+      { name: 'Germany', flag: '🇩🇪', tz: 'Europe/Berlin' }
+    ];
+    
+    function formatTime(date, tz) {
+      try {
+        const options = {
+          timeZone: tz,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        };
+        const timeStr = date.toLocaleTimeString('en-US', options);
+        const parts = timeStr.split(' ');
+        return { time: parts[0], ampm: parts[1] || '' };
+      } catch (e) {
+        return { time: '--:--', ampm: '' };
+      }
+    }
+    
+    function formatDate(date, tz) {
+      try {
+        const options = {
+          timeZone: tz,
+          month: 'short',
+          day: 'numeric'
+        };
+        return date.toLocaleDateString('en-US', options);
+      } catch (e) {
+        return '---';
+      }
+    }
+    
+    function createClockCard(city) {
+      const card = document.createElement('div');
+      card.className = 'clock-card';
+      card.innerHTML = `
+        <span class="flag">${city.flag}</span>
+        <span class="city-name">${city.name}</span>
+        <div class="time-row">
+          <span class="time" data-tz="${city.tz}">--:--</span>
+          <span class="ampm" data-tz-ampm="${city.tz}">--</span>
+        </div>
+        <span class="date" data-tz-date="${city.tz}">---</span>
+      `;
+      return card;
+    }
+    
+    function updateClocks() {
+      const now = new Date();
+      cities.forEach(city => {
+        const { time, ampm } = formatTime(now, city.tz);
+        const dateStr = formatDate(now, city.tz);
+        
+        const timeEl = document.querySelector(`[data-tz="${city.tz}"]`);
+        const ampmEl = document.querySelector(`[data-tz-ampm="${city.tz}"]`);
+        const dateEl = document.querySelector(`[data-tz-date="${city.tz}"]`);
+        
+        if (timeEl) timeEl.textContent = time;
+        if (ampmEl) ampmEl.textContent = ampm;
+        if (dateEl) dateEl.textContent = dateStr;
+      });
+    }
+    
+    function init() {
+      const container = document.getElementById('clockContainer');
+      cities.forEach(city => {
+        container.appendChild(createClockCard(city));
+      });
+      updateClocks();
+      setInterval(updateClocks, 1000);
+    }
+    
+    init();
+  </script>
+</body>
+</html>
